@@ -1,15 +1,10 @@
-get_ipython().system('pip install nba_api')
+#get_ipython().system('pip install nba_api')
 
-get_ipython().run_line_magic('matplotlib', 'inline')
 import re
 import time
 import math
-import random
 import warnings
-import numpy as np
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 from nba_api.stats.endpoints import PlayerGameLogs, TeamGameLogs
 
 def gamedatapull():
