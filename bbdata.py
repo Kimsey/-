@@ -1,14 +1,4 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 get_ipython().system('pip install nba_api')
-
-
-# In[2]:
-
 
 get_ipython().run_line_magic('matplotlib', 'inline')
 import re
@@ -21,10 +11,6 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from nba_api.stats.endpoints import PlayerGameLogs, TeamGameLogs
-
-
-# In[3]:
-
 
 def gamedatapull():
     player = pd.DataFrame()  # Initialize an empty dataframe to store the combined data
@@ -52,17 +38,9 @@ def gamedatapull():
         team =  pd.concat([df_team_game_logs, team], ignore_index=True)
 
     return player, team
-
-
-# In[4]:
-
-
+    
 # Call the function to retrieve the combined dataframe
 player, T3aM = gamedatapull()
-
-
-# In[5]:
-
 
 # PFTkn
 def player_dict(combined_dataframe):
@@ -83,16 +61,7 @@ def player_dict(combined_dataframe):
   combined_dataframe.drop(['Pos', 'AVAILABLE_FLAG'], axis=1, inplace=True)
   return combined_dataframe
 
-
-# In[6]:
-
-
 player_stats = player_dict(player)
-player_stats
-
-
-# In[7]:
-
 
 def split_game_matchup(game):
     if '@' in game:
@@ -294,22 +263,7 @@ def drop(df):
 # HHTR AND AATR
 # Double check software
 
-
-# In[8]:
-
-
 team_stats = drop(record_func(next_func(T3aM)))
-team_stats
-
-
-# In[9]:
-
-
-team_stats.columns
-
-
-# In[10]:
-
 
 #Home and road team win probabilities implied by Elo ratings and home court adjustment
 def win_probs(home_elo, away_elo, home_court_advantage) :
@@ -375,10 +329,6 @@ def get_prev_elo(team, game_date, season, team_stats, elo_df) :
   else :
     return elo_rating
 
-
-# In[11]:
-
-
 def elo_df_I_teams_elo_df(team_stats):
     team_stats.sort_values(by = 'Date', inplace = True)
     team_stats.reset_index(inplace=True, drop = True)
@@ -414,16 +364,8 @@ def elo_df_I_teams_elo_df(team_stats):
       teams_elo_df = teams_elo_df.append(teams_row_two, ignore_index=True)
     return elo_df, teams_elo_df, team_stats
 
-
-# In[12]:
-
-
 warnings.filterwarnings("ignore")
 elo_df, teams_elo_df, team_stats = elo_df_I_teams_elo_df(team_stats)
-
-
-# In[13]:
-
 
 def T_teams_elo_df(teams_elo_df, team_stats):
     dates = list(set([d.strftime("%m-%d-%Y") for d in teams_elo_df["Date"]]))
@@ -442,14 +384,8 @@ def T_teams_elo_df(teams_elo_df, team_stats):
     return teams_elo_df, team_stats
 
 teams_elo_df, team_stats = T_teams_elo_df(teams_elo_df, team_stats)
-elo_df
-
-
-# In[14]:
-
 
 #given a team and a date, this method will return that teams average stats over the previous n games
-
 def get_avg_stats_last_n_games(team, game_date, season_team_stats, n) :
   prev_game_df = season_team_stats[season_team_stats['Date'] < game_date][(season_team_stats['H_Team'] == team) | (season_team_stats['A_Team'] == team)].sort_values(by = 'Date').tail(n)
 
@@ -463,10 +399,6 @@ def get_avg_stats_last_n_games(team, game_date, season_team_stats, n) :
   df.drop(columns = ['Team'], inplace=True)
 
   return df.mean()
-
-
-# In[15]:
-
 
 def Recent_performance_df(team_stats):
     recent_performance_df = pd.DataFrame()
@@ -503,16 +435,7 @@ def Recent_performance_df(team_stats):
     return recent_performance_df, team_stats
 warnings.filterwarnings("ignore")
 recent_performance_df, team_stats = Recent_performance_df(team_stats)
-
-
-# In[16]:
-
-
 recent_performance_df.dropna()
-
-
-# In[17]:
-
 
 def Final_team_stats(team_stats, elo_df, recent_performance_df):
     final_team_stats = team_stats.iloc[0:, [0,1,2,3,4,7,8]].merge(elo_df.drop(columns=['H_Team', 'A_Team']), on = 'Game_ID') \
@@ -522,11 +445,6 @@ def Final_team_stats(team_stats, elo_df, recent_performance_df):
     return final_team_stats
 
 final_team_stats = Final_team_stats(team_stats, elo_df, recent_performance_df)
-final_team_stats.head(5)
-
-
-# In[18]:
-
 
 def Team_performances_df(final_team_stats, recent_performance_df, teams_elo_df):
     home_cols = final_team_stats.columns[final_team_stats.columns.str.startswith('H_')]
@@ -558,16 +476,7 @@ def Team_performances_df(final_team_stats, recent_performance_df, teams_elo_df):
     team_performances_df = pd.concat([team_by_team_home, team_by_team_away]).sort_index(axis=0).reset_index().drop(columns=['index'])
     return team_performances_df, final_team_stats 
 
-
-# In[19]:
-
-
 team_performances_df, final_team_stats = Team_performances_df(final_team_stats, recent_performance_df, teams_elo_df)
-team_performances_df
-
-
-# In[20]:
-
 
 def Final_Player_Stats1(final_team_stats):
     final_team_stats['Label'] = [1 if x > 0 else 0 for x in final_team_stats['H_Points'] - final_team_stats['A_Points']]
@@ -578,18 +487,7 @@ def Final_Player_Stats1(final_team_stats):
     return final_team_stats, combined_copy
 
 final_team_stats, combined_copy = Final_Player_Stats1(final_team_stats)
-
-final_team_stats
-
-
-# In[21]:
-
-
 #final_team_stats.to_csv('Final_Team_Stats.csv')
-
-
-# In[22]:
-
 
 def Player(player_stats):
     player_stats.rename(columns={'GAME_DATE': 'Date', 'MIN' : 'Min', 'SEASON_YEAR' : 'Season', 'PLAYER_NAME' : 'PlayerName', 'GAME_ID' : 'GameID', 'STL' : 'Stl', 'FG3M' : '3FGM',
@@ -599,10 +497,6 @@ def Player(player_stats):
     player_stats['PPP'] = player_stats['PPP'].astype(float)
     return player_stats
 player_stats = Player(player_stats)
-
-
-# In[23]:
-
 
 def rolling_average_last_n_games(n) :
   player_stats_recent_performance_df = pd.DataFrame()
@@ -619,19 +513,9 @@ def rolling_average_last_n_games(n) :
   player_stats_recent_performance_df = player_stats[['PlayerName', 'GameID']].merge(player_stats_recent_performance_df.drop(columns='Last_' + str(n) + '_Avg_' + 'GameID'), left_index=True, right_index=True)
 
   return player_stats_recent_performance_df
-
-
-# In[24]:
-
-
+    
 warnings.filterwarnings("ignore")
 player_recent_performance_df = rolling_average_last_n_games(10)
-
-player_recent_performance_df
-
-
-# In[25]:
-
 
 def Avg_season_stats(player_stats, player_recent_performance_df):
     avg_season_stats = pd.DataFrame()
@@ -653,22 +537,7 @@ def Avg_season_stats(player_stats, player_recent_performance_df):
 
 warnings.filterwarnings("ignore")
 avg_season_stats, final_player_stats = Avg_season_stats(player_stats, player_recent_performance_df)
-
-
-# In[26]:
-
-
-avg_season_stats
-
-
-# In[27]:
-
-
 #final_player_stats.to_csv('Final_Player_Stats.csv')
-
-
-# In[28]:
-
 
 def Team_performances_DF(team_performances_df, combined_copy):
     labels = []
@@ -693,16 +562,6 @@ def Team_performances_DF(team_performances_df, combined_copy):
     return team_performances_df
 team_performances_df = Team_performances_DF(team_performances_df, combined_copy)
 
-
-# In[29]:
-
-
-team_performances_df
-
-
-# In[30]:
-
-
 def PLayer_stats(player_stats):
     player_stats['PER_stub'] = player_stats['FGM'] * 85.910 + player_stats['Stl'] * 53.897 + player_stats['3FGM'] * 51.757 + player_stats['FTM'] * 46.845 \
                                + player_stats['Blk'] * 39.190 + player_stats['OffReb'] * 39.190+ player_stats['Ast'] * 34.677+ player_stats['DefReb'] * 14.707 \
@@ -719,10 +578,6 @@ def PLayer_stats(player_stats):
     player_stats['PER'] = player_stats['PER_stub'] * (1 / player_stats['Min'])
     return player_stats
 player_stats = PLayer_stats(player_stats)
-
-
-# In[34]:
-
 
 def FTS(final_team_stats):
     fts = final_team_stats.copy()
@@ -744,18 +599,6 @@ def FTS(final_team_stats):
     fts['Date'] = fts['Date'].dt.days.astype(int)
     return fts
 fts = FTS(final_team_stats)
-fts
-
-
-# In[35]:
-
 
 features = fts.drop(columns = 'Label')
 label = fts['Label']
-
-
-# In[33]:
-
-
-features
-
